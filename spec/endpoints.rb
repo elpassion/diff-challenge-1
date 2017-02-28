@@ -1,0 +1,5 @@
+API_HOST = 'http://localhost:3000'
+API_PATH = '/api/v1/'
+ORDERS_PATH  = API_PATH + 'orders'
+SIGN_UP_PATH = API_PATH + 'users/sign_up'
+SIGN_IN_PATH = API_PATH + 'users/sign_in'
