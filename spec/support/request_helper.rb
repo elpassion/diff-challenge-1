@@ -1,6 +1,6 @@
 module Request
   module JsonHelper
-    def json
+    def json_response
       JSON.parse(response.body)
     end
   end
@@ -48,11 +48,23 @@ module Request
 
     def get_user_access_token(email = 'foo@bar.com', password = 'Very long password')
       post SIGN_IN_PATH, params: { email: email, password: password }
-      json.fetch('access_token')
+      json_response.fetch('access_token')
     end
 
     def create_user(email = 'foo@bar.com', password = 'Very long password')
       post SIGN_UP_PATH, params: { user: { email: email, password: password, password_confirmation: password } }
+    end
+  end
+
+  module OrderHelper
+    def create_order(restaurant:, access_token: nil)
+      if access_token
+        access_token_header = { "X-Access-Token" => access_token }
+      else
+        access_token_header = access_token_header()
+      end
+
+      post ORDERS_PATH, params: { order: { restaurant: restaurant } }, headers: access_token_header
     end
   end
 end
@@ -60,5 +72,6 @@ end
 RSpec.configure do |config|
   config.include Request::HTTPHelper, type: :request
   config.include Request::JsonHelper, type: :request
+  config.include Request::OrderHelper, type: :request
   config.include Request::SignInHelper, type: :request
 end

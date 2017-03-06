@@ -10,7 +10,7 @@ describe 'User registration', type: :request do
 
     # Sign in with created User to get access token
     post SIGN_IN_PATH, params: { email: email, password: password }
-    access_token = json.fetch('access_token')
+    access_token = json_response.fetch('access_token')
 
     # Test authentication
     get ORDERS_PATH, headers: { "X-Access-Token" => access_token }
