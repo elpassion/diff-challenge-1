@@ -4,10 +4,10 @@ describe 'Orders management', type: :request do
   describe 'create' do
     it 'should create Order' do
       # Create Order
-      post ORDERS_PATH, params: { order: { restaurant: 'Restaurant under Create Order' } }, headers: access_token_header
+      post ORDERS_PATH, params: { order: { restaurant: 'Restaurant under Create Order' } }, headers: default_access_token_header
 
       # List orders to check if Order was successfully created
-      get ORDERS_PATH, headers: access_token_header
+      get ORDERS_PATH, headers: default_access_token_header
 
       newest_order = json_response.fetch('results').first
       expect(newest_order).to eql({ "user" => { "email" => "foo@bar.com" }, "restaurant" => "Restaurant under Create Order" })
@@ -16,22 +16,31 @@ describe 'Orders management', type: :request do
 
   describe 'index' do
     before do
-      create_order(restaurant: 'Restaurant under Order List #1')
-      create_order(restaurant: 'Restaurant under Order List #2')
+      create_user('order-creator-1@order-list.com')
+      create_user('order-creator-2@order-list.com')
 
-      # Create order as another user
-      create_user('user@order-list.com')
-      access_token = get_user_access_token('user@order-list.com')
+      create_user('eater-1@order-list.com')
+      create_user('eater-2@order-list.com')
+      create_user('eater-3@order-list.com')
+      create_user('eater-4@order-list.com')
+
+      # post GROUPS_PATH, params: { group: { emails: [ 'eater-1@order-list.com', 'eater-2@order-list.com' ] } }
+
+      access_token = get_user_access_token('order-creator-1@order-list.com')
+      create_order(restaurant: 'Restaurant under Order List #1', access_token: access_token)
+      create_order(restaurant: 'Restaurant under Order List #2', access_token: access_token)
+
+      access_token = get_user_access_token('order-creator-2@order-list.com')
       create_order(restaurant: 'Restaurant under Order List #3', access_token: access_token)
     end
 
     it 'should list Orders sorted by created at' do
-      get ORDERS_PATH, headers: access_token_header
+      get ORDERS_PATH, headers: default_access_token_header
       three_newest_orders = json_response.fetch('results')[0..2]
       expected = [
-        { "user" => { "email" => 'user@order-list.com' }, "restaurant" => "Restaurant under Order List #3" },
-        { "user" => { "email" => "foo@bar.com" }, "restaurant" => "Restaurant under Order List #2" },
-        { "user" => { "email" => "foo@bar.com" }, "restaurant" => "Restaurant under Order List #1" },
+        { "user" => { "email" => 'order-creator-2@order-list.com' }, "restaurant" => "Restaurant under Order List #3" },
+        { "user" => { "email" => 'order-creator-1@order-list.com' }, "restaurant" => "Restaurant under Order List #2" },
+        { "user" => { "email" => 'order-creator-1@order-list.com' }, "restaurant" => "Restaurant under Order List #1" },
       ]
       expect(three_newest_orders).to eql(expected)
     end

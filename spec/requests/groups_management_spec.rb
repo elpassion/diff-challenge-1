@@ -9,10 +9,10 @@ describe 'Groups management', type: :request do
 
     it 'should create Group' do
       # Create Group
-      post GROUPS_PATH, params: { group: { emails: ['group-memeber-1@group-create.com', 'group-memeber-2@group-create.com'] } }, headers: access_token_header
+      post GROUPS_PATH, params: { group: { emails: ['group-memeber-1@group-create.com', 'group-memeber-2@group-create.com'] } }, headers: default_access_token_header
 
       # List groups to check if Group was successfully created
-      get GROUPS_PATH, headers: access_token_header
+      get GROUPS_PATH, headers: default_access_token_header
 
       newest_group              = json_response.fetch('results').first
       newest_group_users_emails = newest_group.fetch('users').map { |user| user.fetch('email') }

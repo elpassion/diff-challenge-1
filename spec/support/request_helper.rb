@@ -39,11 +39,25 @@ module Request
     end
   end
 
+  module OrderHelper
+    def create_order(restaurant:, access_token: nil)
+      post ORDERS_PATH, params: { order: { restaurant: restaurant } }, headers: build_access_token_header(access_token: access_token)
+    end
+  end
+
   module SignInHelper
-    def access_token_header
+    def default_access_token_header
       create_user
       access_token = get_user_access_token
       { "X-Access-Token" => access_token }
+    end
+
+    def build_access_token_header(access_token: nil)
+      if access_token
+        { "X-Access-Token" => access_token }
+      else
+        default_access_token_header
+      end
     end
 
     def get_user_access_token(email = 'foo@bar.com', password = 'Very long password')
@@ -53,18 +67,6 @@ module Request
 
     def create_user(email = 'foo@bar.com', password = 'Very long password')
       post SIGN_UP_PATH, params: { user: { email: email, password: password, password_confirmation: password } }
-    end
-  end
-
-  module OrderHelper
-    def create_order(restaurant:, access_token: nil)
-      if access_token
-        access_token_header = { "X-Access-Token" => access_token }
-      else
-        access_token_header = access_token_header()
-      end
-
-      post ORDERS_PATH, params: { order: { restaurant: restaurant } }, headers: access_token_header
     end
   end
 end
