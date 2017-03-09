@@ -39,6 +39,12 @@ module Request
     end
   end
 
+  module GroupHelper
+    def create_group(emails:, access_token: nil)
+      post GROUPS_PATH, params: { group: { emails: emails } }, headers: build_access_token_header(access_token: access_token)
+    end
+  end
+
   module OrderHelper
     def create_order(restaurant:, access_token: nil)
       post ORDERS_PATH, params: { order: { restaurant: restaurant } }, headers: build_access_token_header(access_token: access_token)
@@ -73,6 +79,7 @@ end
 
 RSpec.configure do |config|
   config.include Request::HTTPHelper, type: :request
+  config.include Request::GroupHelper, type: :request
   config.include Request::JsonHelper, type: :request
   config.include Request::OrderHelper, type: :request
   config.include Request::SignInHelper, type: :request
