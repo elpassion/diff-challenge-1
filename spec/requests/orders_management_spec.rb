@@ -3,46 +3,72 @@ require 'spec_helper'
 describe 'Orders management', type: :request do
   describe 'create' do
     it 'should create Order' do
-      # Create Order
       post ORDERS_PATH, params: { order: { restaurant: 'Restaurant under Create Order' } }, headers: default_access_token_header
-
-      # List orders to check if Order was successfully created
-      get ORDERS_PATH, headers: default_access_token_header
-
-      newest_order = json_response.fetch('results').first
+      newest_order = orders.first
       expect(newest_order).to eql({ "user" => { "email" => "foo@bar.com" }, "restaurant" => "Restaurant under Create Order" })
     end
   end
 
   describe 'index' do
-    before do
-      create_user('order-creator-1@order-list.com')
-      create_user('order-creator-2@order-list.com')
+    context 'Orders with Group' do
+      let(:group_1_order_data) { { 'user' => { 'email' => order_creator_1 }, 'restaurant' => restaurant_1 } }
+      let(:group_2_order_data) { { 'user' => { 'email' => order_creator_2 }, 'restaurant' => restaurant_2 } }
+      let(:member_of_group_1) { 'eater-1@order-list.com' }
+      let(:member_of_group_1_and_2) { 'eater-2@order-list.com' }
+      let(:member_of_group_2) { 'eater-3@order-list.com' }
+      let(:order_creator_1) { 'order-creator-1@order-list.com' }
+      let(:order_creator_2) { 'order-creator-2@order-list.com' }
+      let(:restaurant_1) { 'Restaurant under Group #1' }
+      let(:restaurant_2) { 'Restaurant under Group #2' }
 
-      create_user('eater-1@order-list.com')
-      create_user('eater-2@order-list.com')
-      create_user('eater-3@order-list.com')
-      create_user('eater-4@order-list.com')
+      before do
+        create_user(order_creator_1)
+        create_user(order_creator_2)
+        create_user(member_of_group_1)
+        create_user(member_of_group_1_and_2)
+        create_user(member_of_group_2)
 
-      # post GROUPS_PATH, params: { group: { emails: [ 'eater-1@order-list.com', 'eater-2@order-list.com' ] } }
+        get_user_access_token(order_creator_1).tap do |access_token|                                     # As a 1st User
+          create_group(emails: [member_of_group_1, member_of_group_1_and_2], access_token: access_token) # create Group
+          create_order(                                                                                  # and Create Order for newly created Group
+            group_id:     groups_ids.first,
+            restaurant:   restaurant_1,
+            access_token: access_token)
+        end
 
-      access_token = get_user_access_token('order-creator-1@order-list.com')
-      create_order(restaurant: 'Restaurant under Order List #1', access_token: access_token)
-      create_order(restaurant: 'Restaurant under Order List #2', access_token: access_token)
+        get_user_access_token(order_creator_2).tap do |access_token|                                     # As a 2nd User
+          create_group(emails: [member_of_group_1_and_2, member_of_group_2], access_token: access_token) # create Group
+          create_order(                                                                                  # and Create Order for newly created Group
+            group_id:     groups_ids.first,
+            restaurant:   restaurant_2,
+            access_token: access_token)
+        end
+      end
 
-      access_token = get_user_access_token('order-creator-2@order-list.com')
-      create_order(restaurant: 'Restaurant under Order List #3', access_token: access_token)
-    end
+      it 'should be listed for User who created Order and for Users who belong to Order Groups' do
+        [order_creator_1, member_of_group_1].each do |user|
+          access_token = get_user_access_token(user)
+          get ORDERS_PATH, headers: build_access_token_header(access_token: access_token)
+          orders = json_response.fetch('results')
 
-    it 'should list Orders sorted by created at' do
-      get ORDERS_PATH, headers: default_access_token_header
-      three_newest_orders = json_response.fetch('results')[0..2]
-      expected = [
-        { "user" => { "email" => 'order-creator-2@order-list.com' }, "restaurant" => "Restaurant under Order List #3" },
-        { "user" => { "email" => 'order-creator-1@order-list.com' }, "restaurant" => "Restaurant under Order List #2" },
-        { "user" => { "email" => 'order-creator-1@order-list.com' }, "restaurant" => "Restaurant under Order List #1" },
-      ]
-      expect(three_newest_orders).to eql(expected)
+          expect(orders).to eql([group_1_order_data])
+        end
+
+        [order_creator_2, member_of_group_2].each do |user|
+          access_token = get_user_access_token(user)
+          get ORDERS_PATH, headers: build_access_token_header(access_token: access_token)
+          orders = json_response.fetch('results')
+
+          expect(orders).to eql([group_2_order_data])
+        end
+
+        access_token = get_user_access_token(member_of_group_1_and_2)
+        get ORDERS_PATH, headers: build_access_token_header(access_token: access_token)
+        orders = json_response.fetch('results')
+
+        expect(orders).to eql([group_2_order_data,
+                               group_1_order_data])
+      end
     end
   end
 end

@@ -43,11 +43,22 @@ module Request
     def create_group(emails:, access_token: nil)
       post GROUPS_PATH, params: { group: { emails: emails } }, headers: build_access_token_header(access_token: access_token)
     end
+
+    def groups_ids(access_token: nil)
+      get GROUPS_PATH, headers: build_access_token_header(access_token: access_token)
+      json_response.fetch('results').map { |group| group.fetch('id') }
+    end
   end
 
   module OrderHelper
-    def create_order(restaurant:, access_token: nil)
-      post ORDERS_PATH, params: { order: { restaurant: restaurant } }, headers: build_access_token_header(access_token: access_token)
+    def create_order(group_id: nil, restaurant:, access_token: nil)
+      post ORDERS_PATH, params: { order: { group_id: group_id, restaurant: restaurant } }, headers: build_access_token_header(access_token: access_token)
+    end
+
+    def orders(user: nil)
+      access_token = user ? get_user_access_token(user) : get_user_access_token
+      get ORDERS_PATH, headers: build_access_token_header(access_token: access_token)
+      json_response.fetch('results')
     end
   end
 
