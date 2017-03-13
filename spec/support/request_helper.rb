@@ -40,19 +40,19 @@ module Request
   end
 
   module GroupHelper
-    def create_group(emails:, access_token: nil)
-      post GROUPS_PATH, params: { group: { emails: emails } }, headers: build_access_token_header(access_token: access_token)
+    def create_group(creator:, members_emails:)
+      post GROUPS_PATH, params: { group: { emails: members_emails } }, headers: access_token_header(email: creator)
     end
 
-    def groups_ids(access_token: nil)
-      get GROUPS_PATH, headers: build_access_token_header(access_token: access_token)
+    def groups_ids(current_user_email:)
+      get GROUPS_PATH, headers: access_token_header(email: current_user_email)
       json_response.fetch('results').map { |group| group.fetch('id') }
     end
   end
 
   module OrderHelper
-    def create_order(group_id: nil, restaurant:, access_token: nil)
-      post ORDERS_PATH, params: { order: { group_id: group_id, restaurant: restaurant } }, headers: build_access_token_header(access_token: access_token)
+    def create_order(current_user_email:, group_id: nil, restaurant:)
+      post ORDERS_PATH, params: { order: { group_id: group_id, restaurant: restaurant } }, headers: access_token_header(email: current_user_email)
     end
 
     def orders(user:)
@@ -80,7 +80,7 @@ module Request
       json_response.fetch('access_token')
     end
 
-    def user_header(email:)
+    def access_token_header(email:)
       build_access_token_header(access_token: get_user_access_token(email: email))
     end
   end
