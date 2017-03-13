@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe 'User registration', type: :request do
-  let(:email) { 'foo@bar.com' }
+  let(:email) { 'new-user@user-registration.com' }
   let(:password) { 'Very long password' }
 
   it 'should create User who can sign in' do

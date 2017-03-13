@@ -55,35 +55,33 @@ module Request
       post ORDERS_PATH, params: { order: { group_id: group_id, restaurant: restaurant } }, headers: build_access_token_header(access_token: access_token)
     end
 
-    def orders(user: nil)
-      access_token = user ? get_user_access_token(user) : get_user_access_token
+    def orders(user:)
+      access_token = get_user_access_token(email: user)
       get ORDERS_PATH, headers: build_access_token_header(access_token: access_token)
       json_response.fetch('results')
     end
   end
 
   module SignInHelper
-    def default_access_token_header
-      create_user
-      access_token = get_user_access_token
+    def build_access_token_header(access_token:)
       { "X-Access-Token" => access_token }
     end
 
-    def build_access_token_header(access_token: nil)
-      if access_token
-        { "X-Access-Token" => access_token }
-      else
-        default_access_token_header
-      end
+    def create_user(email = default_user_email, password = 'Very long password')
+      post SIGN_UP_PATH, params: { user: { email: email, password: password, password_confirmation: password } }
     end
 
-    def get_user_access_token(email = 'foo@bar.com', password = 'Very long password')
+    def default_user_email
+      'foo@bar.com'
+    end
+
+    def get_user_access_token(email:, password: 'Very long password')
       post SIGN_IN_PATH, params: { email: email, password: password }
       json_response.fetch('access_token')
     end
 
-    def create_user(email = 'foo@bar.com', password = 'Very long password')
-      post SIGN_UP_PATH, params: { user: { email: email, password: password, password_confirmation: password } }
+    def user_header(email:)
+      build_access_token_header(access_token: get_user_access_token(email: email))
     end
   end
 end
