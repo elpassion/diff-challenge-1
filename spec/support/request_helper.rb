@@ -51,8 +51,8 @@ module Request
   end
 
   module OrderHelper
-    def create_order(current_user_email:, group_id: nil, restaurant:)
-      post ORDERS_PATH, params: { order: { group_id: group_id, restaurant: restaurant } }, headers: access_token_header(email: current_user_email)
+    def create_order(current_user_email:, eaters_emails: nil, group_id: nil, restaurant:)
+      post ORDERS_PATH, params: { order: { eaters_emails: eaters_emails, group_id: group_id, restaurant: restaurant } }, headers: access_token_header(email: current_user_email)
     end
 
     def orders(user:)
