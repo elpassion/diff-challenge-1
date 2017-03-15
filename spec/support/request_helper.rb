@@ -44,15 +44,15 @@ module Request
       post GROUPS_PATH, params: { group: { emails: members_emails } }, headers: access_token_header(email: creator)
     end
 
-    def groups_ids(current_user_email:)
-      get GROUPS_PATH, headers: access_token_header(email: current_user_email)
+    def groups_ids(current_user:)
+      get GROUPS_PATH, headers: access_token_header(email: current_user)
       json_response.fetch('results').map { |group| group.fetch('id') }
     end
   end
 
   module OrderHelper
-    def create_order(current_user_email:, eaters_emails: nil, group_id: nil, restaurant:)
-      post ORDERS_PATH, params: { order: { eaters_emails: eaters_emails, group_id: group_id, restaurant: restaurant } }, headers: access_token_header(email: current_user_email)
+    def create_order(current_user:, invited_users_emails: nil, group_id: nil, restaurant:)
+      post ORDERS_PATH, params: { order: { invited_users_emails: invited_users_emails, group_id: group_id, restaurant: restaurant } }, headers: access_token_header(email: current_user)
     end
 
     def orders(user:)
