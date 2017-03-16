@@ -28,7 +28,7 @@ so don't be surprise by the fact that there are no tests for validations, that a
 ### Steps
 
 1. Install requirements:
-    - Ruby 2.3.3.
+    - Ruby 2.4.
     - Bundler.
 1. Fork this repository.
 1. Install gems with `bundle install`.
