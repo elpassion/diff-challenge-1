@@ -4,14 +4,16 @@ This is a **Diff Challenge** repository. If you don't know what **Diff Challenge
 read [this](https://github.com/elpassion/diff-challenge-1/wiki/Diff-Challenge) first.
 
 #### First part (Codebase Part)
-From the technical point of view, your task is to build an API - in Ruby - which will pass the tests from this repository. From the business point of view, your task is to build an app for group food ordering.
+From the technical point of view, your task is to build an API which will pass the tests from this repository. From the business point of view, your task is to build an app for group food ordering.
+
+API has to be written in Ruby, but besides that there are no other technical requirements. You can use whatever framework you want (or write your own).
 
 There are 7 endpoints to implement which can be grouped in three categories:
 - User registration and authentication (very basic).
 - Creating Groups, i.e. collection of Users which can order food from a restaurant together.
 - Creating Orders. Order can be assigned to an existing Group or to a collection of individuals created ad hoc by entering their emails.
 
-You have 14 days to submit your solution.
+You have to submit your solution to 3.04.2017, 3pm.
 
 #### Second part (Diff Part)
 After the Codebase Part all participants who submitted their solution will receive a new specification in form of updated tests. 
