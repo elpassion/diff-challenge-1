@@ -8,6 +8,15 @@ class Api::V1::UsersController < ApplicationController
     render json: UserPresenter.new(user).as_json
   end
 
+  def sign_in
+    user = User.find_by_email(params[:email])
+    unless user && user.authenticate(params[:password])
+      render status: :unprocessable_entity
+      return
+    end
+    render json: UserPresenter.new(user).as_json
+  end
+
   private
 
   def user_params
