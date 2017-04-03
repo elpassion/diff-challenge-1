@@ -5,7 +5,7 @@ class Api::V1::UsersController < ApplicationController
       render status: :unprocessable_entity
       return
     end
-    render json: UserPresenter.new(user).as_json
+    render json: AuthTokenPresenter.new(user).as_json
   end
 
   def sign_in
@@ -14,7 +14,7 @@ class Api::V1::UsersController < ApplicationController
       render status: :unprocessable_entity
       return
     end
-    render json: UserPresenter.new(user).as_json
+    render json: AuthTokenPresenter.new(user).as_json
   end
 
   private

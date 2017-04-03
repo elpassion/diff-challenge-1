@@ -5,6 +5,9 @@ Rails.application.routes.draw do
       post 'users/sign_in'
 
       get 'orders' => 'orders#index'
+
+      get 'groups' => 'groups#index'
+      post 'groups' => 'groups#create'
     end
   end
 end

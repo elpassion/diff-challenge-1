@@ -4,6 +4,7 @@ class User < ApplicationRecord
   validates :email, presence: true, uniqueness: true
 
   before_create :set_access_token
+  has_and_belongs_to_many :groups, join_table: 'memberships', foreign_key: 'user_id'
 
   private
 
