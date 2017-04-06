@@ -141,6 +141,85 @@ describe 'Orders management', type: :request do
       end
     end
 
+    context 'premium' do
+      context 'Orders with domain-based Group' do
+        let(:first_order_data) { { 'founder'       => { 'email' => creator_of_first_order },
+                                   'domain' => first_domain,
+                                   'restaurant'    => restaurant_1 } }
+        let(:second_order_data) { { 'founder'       => { 'email' => creator_of_second_order },
+                                    'domain' => second_domain,
+                                    'restaurant'    => restaurant_2 } }
+        let(:user_with_first_domain) { "user-1@#{first_domain}" }
+        let(:user_with_second_domain) { "user-2@#{second_domain}" }
+        let(:creator_of_first_order) { "order-creator-1@#{first_domain}" }
+        let(:creator_of_second_order) { "order-creator-2@#{second_domain}" }
+        let(:first_domain) { 'domain-1-orders-index-with-domain-based-group.com' }
+        let(:second_domain) { 'domain-2-orders-index-with-domain-based-group.com' }
+        let(:restaurant_1) { 'Restaurant under Group #1' }
+        let(:restaurant_2) { 'Restaurant under Group #2' }
+
+        before do
+          create_user(creator_of_first_order)
+          create_user(creator_of_second_order)
+          create_user(user_with_first_domain)
+          create_user(user_with_second_domain)
+
+          create_group_with_premium(
+            creator: creator_of_first_order,
+            domain:  first_domain
+          ).tap do
+            newest_group_id = groups_ids(current_user: creator_of_first_order).first
+
+            create_order(
+              group_id:     newest_group_id,
+              restaurant:   restaurant_1,
+              current_user: creator_of_first_order)
+          end
+
+          create_group_with_premium(
+            creator: creator_of_second_order,
+            domain:  second_domain
+          ).tap do
+            newest_group_id = groups_ids(current_user: creator_of_second_order).first
+
+            create_order(
+              group_id:     newest_group_id,
+              restaurant:   restaurant_2,
+              current_user: creator_of_second_order)
+          end
+        end
+
+        it "should be visible for User who created order and for Users with emails in Group's domain" do
+          [creator_of_first_order, user_with_first_domain].each do |email|
+            get PREMIUM_PREFIX + ORDERS_PATH, headers: access_token_header(email: email)
+            orders = json_response.fetch('results')
+
+            expect(orders).to eql([first_order_data])
+          end
+
+          [creator_of_second_order, user_with_second_domain].each do |email|
+            get PREMIUM_PREFIX + ORDERS_PATH, headers: access_token_header(email: email)
+            orders = json_response.fetch('results')
+
+            expect(orders).to eql([second_order_data])
+          end
+
+          # should not be visible for non-premium Users
+          get ORDERS_PATH,  # non-premium path
+              headers: access_token_header(email: user_with_first_domain)
+          orders = json_response.fetch('results')
+
+          expect(orders).to eql([])
+
+          # ...but it should always be visible for order creator, even if creator is no longer premium User
+          get ORDERS_PATH, headers: access_token_header(email: creator_of_first_order)
+          orders = json_response.fetch('results')
+
+          expect(orders).to eql([first_order_data])
+        end
+      end
+    end
+
     context 'Orders with Users' do
       let(:order_1_data) { { 'founder'       => { 'email' => creator_of_first_order },
                              'invited_users' => [{ 'email' => user_invited_to_first_order }, { 'email' => user_invited_to_first_and_second_order }, { 'email' => creator_of_first_order }],
