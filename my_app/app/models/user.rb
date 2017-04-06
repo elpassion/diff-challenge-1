@@ -5,6 +5,8 @@ class User < ApplicationRecord
 
   before_create :set_access_token
   has_and_belongs_to_many :groups, join_table: 'memberships', foreign_key: 'user_id'
+  has_many :created_orders, :class_name => 'Order', :foreign_key => "founder_id"
+  has_and_belongs_to_many :orders, join_table: 'purchasers', foreign_key: 'user_id'
 
   private
 

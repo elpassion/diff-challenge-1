@@ -4,9 +4,10 @@ Rails.application.routes.draw do
       post 'users/sign_up'
       post 'users/sign_in'
 
-      get 'orders' => 'orders#index'
+      get  'orders' => 'orders#index'
+      post 'orders' => 'orders#create'
 
-      get 'groups' => 'groups#index'
+      get  'groups' => 'groups#index'
       post 'groups' => 'groups#create'
     end
   end
