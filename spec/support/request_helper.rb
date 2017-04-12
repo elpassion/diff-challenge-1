@@ -17,13 +17,18 @@ module Request
       def ok?
         code == 200
       end
+
+      def status
+        code
+      end
     end
 
     def get(url, options = {})
       new_options = {}
       new_options[:body] = options[:params]
       new_options[:headers] = options[:headers]
-      @response = TestedAPI.get(url, new_options)
+      response = TestedAPI.get(url, new_options)
+      @response = HTTPartyResponseToRSpecResponseAdapter.new(response)
     end
 
     def post(url, options = {})
@@ -41,7 +46,16 @@ module Request
 
   module GroupHelper
     def create_group(creator:, members_emails:)
-      post GROUPS_PATH, params: { group: { emails: members_emails } }, headers: access_token_header(email: creator)
+      post GROUPS_PATH, params: { group: { emails: members_emails} }, headers: access_token_header(email: creator)
+    end
+
+    def create_group_with_premium(creator:, members_emails: nil, domain: nil)
+      if members_emails
+        group_params = { emails: members_emails }
+      elsif domain
+        group_params = { domain: domain }
+      end
+      post PREMIUM_PREFIX + GROUPS_PATH, params: { group: group_params }, headers: access_token_header(email: creator)
     end
 
     def groups_ids(current_user:)

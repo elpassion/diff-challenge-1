@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe 'Groups management', type: :request do
   describe 'POST /groups' do
+    context 'Groups with Members' do
     before do
       create_user(group_creator)
       create_user(first_group_member)
@@ -32,6 +33,53 @@ describe 'Groups management', type: :request do
         second_group_member
       ]
       expect(newest_group_users_emails).to eql(expected)
+    end
+    end
+
+    context 'premium' do
+      context 'Groups with domain' do
+        before do
+          create_user(group_creator)
+        end
+
+        let(:domain) { 'domain-group-with-domain-create.com' }
+        let(:other_domain) { 'other-domain-group-with-domain-create.com' }
+        let(:group_creator) { "group-creator@#{domain}" }
+        let(:headers) { access_token_header(email: group_creator) }
+
+        it 'should create Group' do
+          # Create Group
+          post PREMIUM_PREFIX + GROUPS_PATH,
+               params:  { group: { domain: domain } },
+               headers: headers
+
+          # List groups to check if Group was successfully created
+          get PREMIUM_PREFIX + GROUPS_PATH, headers: headers
+
+          newest_group        = json_response.fetch('results').first
+          newest_group_domain = newest_group.fetch('domain')
+          newest_group_users  = newest_group['users']
+
+          expect(newest_group_domain).to eql(domain)
+          expect(newest_group_users).to eql(nil)
+        end
+
+        it 'should not create Group if creator email is in other domain' do
+          post PREMIUM_PREFIX + GROUPS_PATH,
+               params:  { group: { domain: other_domain } },
+               headers: headers
+
+          expect(response.status).to eql 422
+        end
+
+        it 'should not create Group if creator is non-premium User' do
+          post GROUPS_PATH, # non-premium path
+               params:  { group: { domain: domain } },
+               headers: headers
+
+          expect(response.status).to eql 422
+        end
+      end
     end
   end
 
