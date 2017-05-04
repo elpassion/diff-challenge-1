@@ -1,0 +1,42 @@
+Style/AlignParameters:
+  # The `with_fixed_indentation` style aligns the following lines with one
+  # level of indentation relative to the start of the line with the method call.
+  #
+  #     method_call(a,
+  #       b)
+  EnforcedStyle: with_fixed_indentation
+
+Metrics/LineLength:
+  Max: 120
+
+Metrics/ClassLength:
+  CountComments: false  # count full line comments?
+  Max: 250
+
+Metrics/ModuleLength:
+  CountComments: false  # count full line comments?
+  Max: 250
+
+Metrics/MethodLength:
+  CountComments: false  # count full line comments?
+  Max: 30
+
+Documentation:
+  Enabled: false
+
+AllCops:
+  TargetRubyVersion: 2.3
+  Exclude:
+    - 'db/**/*'
+    - 'config/**/*'
+    - 'script/**/*'
+    - 'spec/rails_helper.rb'
+
+Style/AlignHash:
+  Enabled: false
+
+Style/GlobalVars:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
